@@ -21,11 +21,11 @@ app_liga = liga.liga(storage)
 
 
 # create file secret_key.txt:
-#openssl rand -hex 32 > secret_key.txt
+# openssl rand -hex 32 > secret_key.txt
 
 # create password_hash.txt:
 # python3 -c 'from passlib.hash import bcrypt; print(bcrypt.using(rounds=12).hash("password"))' > password_hash.txt
-
+# change password
 
 with open("secret_key.txt", "r") as f:
     SECRET_KEY = f.readline()
