@@ -19,13 +19,25 @@ storage = "storage.json"
 
 app_liga = liga.liga(storage)
 
+# install packages:
+# pip install fastapi
+# pip install uvicorn
+# pip install passlib
+# pip install pyjwt
+
+# run server:
+# uvicorn main:app --host 168.119.228.214
+
+
+# move to server:
+# scp -r mtg_liga_elo "root@[2a01:4f8:c2c:798a::1]:/home/fernando/"
 
 # create file secret_key.txt:
 # openssl rand -hex 32 > secret_key.txt
 
-# create password_hash.txt:
-# python3 -c 'from passlib.hash import bcrypt; print(bcrypt.using(rounds=12).hash("password"))' > password_hash.txt
-# change password
+
+print()
+
 
 with open("secret_key.txt", "r") as f:
     SECRET_KEY = f.readline()
@@ -37,6 +49,7 @@ ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
 username = "wizard"
+
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -58,6 +71,14 @@ class Token(BaseModel):
 
 def verify_password(password):
     return pwd_context.verify(password, password_hash)
+
+# create password_hash.txt:
+# python3 -c 'from passlib.hash import bcrypt; print(bcrypt.using(rounds=12).hash("password"))' > password_hash.txt
+# change password
+def get_password_hash(password):
+    return pwd_context.hash(password)
+print (get_password_hash("goblinsbad"))
+
 
 app = FastAPI(title="Elo API", details="API for managing elo ratings")
 
@@ -128,7 +149,7 @@ async def is_authenticated(token: Annotated[str, Depends(oauth2_scheme)]):
         )
 
 def authenticate_login(username: str, password: str):
-    if username == "admin" and verify_password(password):
+    if username == "wizard" and verify_password(password):
         return True
     return False
 
@@ -139,6 +160,7 @@ async def login_for_access_token(
     response: Response,
     form_data: Annotated[OAuth2PasswordRequestFormStrict, Depends()],
 ) -> Token:
+    print (form_data.username, form_data.password)
     user = authenticate_login(form_data.username, form_data.password)
     if not user:
         raise HTTPException(
@@ -156,6 +178,7 @@ async def login_for_access_token(
     response.set_cookie(key="access_token", value=f"Bearer {access_token}", httponly=True)
 
     return token
+
 
 @app.get("/authenticated")
 async def authenticated(
